@@ -1,0 +1,14 @@
+# Секреты — никогда не коммитить
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Docker
+.dockerignore
+
+# Temp файлы
+*.tmp

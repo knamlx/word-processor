@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>word-processor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<style>
+:root{
+  --bg:#f7f7f8;
+  --surface:#ffffff;
+  --surface2:#f0f0f2;
+  --surface3:#e8e8ed;
+  --bd:#e5e5ea;
+  --bd2:#d1d1d6;
+  --ac:#007aff;
+  --ac-h:#0062cc;
+  --ac-light:#e8f0fe;
+  --ac-light2:#d2e3fc;
+  --tx:#1c1c1e;
+  --tx2:#48484a;
+  --tx3:#8e8e93;
+  --tx4:#aeaeb2;
+  --ok:#34c759;
+  --er:#ff3b30;
+  --warn:#ff9500;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;display:flex;flex-direction:column}
+
+/* ── Header ── */
+header{
+  background:rgba(255,255,255,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bd);
+  padding:0 20px;height:48px;display:flex;align-items:center;gap:12px;flex-shrink:0;
+  position:relative;z-index:10
+}
+.logo{font-size:16px;font-weight:700;letter-spacing:-.4px;color:var(--tx)}
+.hbadge{
+  background:var(--ac-light);border-radius:20px;
+  padding:3px 10px;font-size:11px;color:var(--ac);font-weight:500;letter-spacing:-.1px
+}
+.hright{margin-left:auto;display:flex;align-items:center;gap:6px}
+.api-pill{
+  display:flex;align-items:center;gap:5px;font-size:12px;color:var(--tx3);
+  background:var(--surface2);border-radius:20px;padding:3px 10px;font-weight:500
+}
+.api-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--tx4)}
+
+/* ── Layout ── */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* ── Left panel ── */
+.lp{
+  width:256px;background:var(--surface);border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;flex-shrink:0;overflow:hidden
+}
+
+.sh{padding:14px 14px 8px;display:flex;align-items:center;justify-content:space-between}
+.sl{font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--tx3)}
+
+.add-btn{
+  width:26px;height:26px;border-radius:7px;background:var(--ac);border:none;
+  color:white;cursor:pointer;font-size:16px;display:flex;align-items:center;
+  justify-content:center;transition:all .15s;line-height:1;padding-bottom:1px
+}
+.add-btn:hover{background:var(--ac-h);transform:scale(1.05)}
+.add-btn:active{transform:scale(.97)}
+
+/* Skills */
+.sk-scroll{overflow-y:auto;padding:0 10px 6px;display:flex;flex-direction:column;gap:2px;max-height:210px;flex-shrink:0}
+.sk-scroll::-webkit-scrollbar{width:3px}
+.sk-scroll::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+.no-sk-row{
+  margin:0 10px 2px;border-radius:9px;border:1.5px dashed var(--bd2);
+  padding:8px 12px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:8px;color:var(--tx3);font-size:13px;font-weight:500
+}
+.no-sk-row:hover{border-color:var(--bd2);background:var(--surface2);color:var(--tx2)}
+.no-sk-row.active{border-color:var(--ac);background:var(--ac-light);color:var(--ac)}
+
+.sk{
+  border-radius:9px;border:1.5px solid transparent;padding:8px 10px;cursor:pointer;
+  transition:all .15s;display:flex;align-items:center;gap:9px;position:relative
+}
+.sk:hover{background:var(--surface2)}
+.sk.active{background:var(--ac-light);border-color:var(--ac-light2)}
+.sk-num{
+  width:24px;height:24px;border-radius:7px;background:var(--surface2);border:1px solid var(--bd);
+  font-size:11px;font-weight:600;color:var(--tx3);display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;font-family:'JetBrains Mono',monospace;transition:all .15s
+}
+.sk.active .sk-num{background:var(--ac);border-color:var(--ac);color:white}
+.sk-inf{flex:1;min-width:0}
+.sk-nm{font-size:13px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk.active .sk-nm{color:var(--ac)}
+.sk-ds{font-size:11.5px;color:var(--tx3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-acts{display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);gap:3px}
+.sk:hover .sk-acts{display:flex}
+.sk-a{
+  background:var(--surface);border:1px solid var(--bd);color:var(--tx3);
+  border-radius:5px;width:22px;height:22px;cursor:pointer;font-size:11px;
+  display:flex;align-items:center;justify-content:center;transition:all .1s
+}
+.sk-a:hover{color:var(--tx);background:var(--surface2)}
+.sk-a.del:hover{color:var(--er);border-color:#ffd7d5;background:#fff5f5}
+
+.sk-empty{padding:20px 14px 12px;text-align:center}
+.sk-empty-icon{width:40px;height:40px;border-radius:12px;background:var(--surface2);border:1px solid var(--bd);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.sk-empty p{font-size:12.5px;color:var(--tx3);line-height:1.65}
+.sk-empty .hint{font-size:11.5px;color:var(--tx4);margin-top:5px;line-height:1.6}
+
+/* Settings */
+.settings{padding:10px 14px 8px;border-top:1px solid var(--bd);flex-shrink:0}
+.sr{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.sr>label{font-size:11px;font-weight:500;color:var(--tx3);letter-spacing:.1px}
+.sr-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sr-row label{font-size:11px;font-weight:500;color:var(--tx3)}
+.sr select,.sr input[type=number]{
+  background:var(--surface);border:1px solid var(--bd);color:var(--tx);
+  border-radius:8px;padding:6px 10px;font-size:13px;font-weight:500;outline:none;
+  font-family:inherit;cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  -webkit-appearance:none;appearance:none;width:100%
+}
+.sr select{padding-right:26px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aeaeb2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+.sr select:focus,.sr input:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(0,122,255,.12);outline:none}
+.sr input[type=number]{width:68px}
+.tog{display:flex;align-items:center;cursor:pointer}
+.tog input{display:none}
+.tog-t{width:34px;height:20px;background:var(--bd2);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0}
+.tog input:checked+.tog-t{background:var(--ac)}
+.tog-th{position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog input:checked~.tog-t .tog-th{left:16px}
+
+/* Actions */
+.actions{padding:10px 14px 14px;display:flex;flex-direction:column;gap:7px;flex-shrink:0;border-top:1px solid var(--bd)}
+.btn{
+  padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-size:13px;
+  font-weight:600;transition:all .15s;display:flex;align-items:center;
+  justify-content:center;gap:7px;width:100%;font-family:inherit;letter-spacing:-.1px
+}
+.btn-p{background:var(--ac);color:white;box-shadow:0 2px 8px rgba(0,122,255,.25)}
+.btn-p:hover{background:var(--ac-h);box-shadow:0 4px 12px rgba(0,122,255,.35);transform:translateY(-1px)}
+.btn-p:active{transform:translateY(0);box-shadow:0 1px 4px rgba(0,122,255,.2)}
+.btn-s{background:var(--surface);color:var(--tx2);border:1px solid var(--bd);box-shadow:var(--shadow)}
+.btn-s:hover{background:var(--surface2);color:var(--tx)}
+.btn-s:active{background:var(--surface3)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+/* Right panel */
+.rp{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.tabs{
+  display:flex;background:var(--surface);border-bottom:1px solid var(--bd);
+  flex-shrink:0;padding:0 4px
+}
+.tab{
+  padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;
+  color:var(--tx3);border-bottom:2px solid transparent;transition:all .15s;
+  display:flex;align-items:center;gap:6px;white-space:nowrap
+}
+.tab.active{color:var(--ac);border-bottom-color:var(--ac)}
+.tab:hover:not(.active){color:var(--tx2)}
+.tab-ready{width:6px;height:6px;border-radius:50%;background:var(--ok);display:none;flex-shrink:0}
+.tab.has-content .tab-ready{display:block}
+
+.panels{flex:1;overflow:hidden;position:relative}
+.panel{position:absolute;inset:0;overflow:auto;display:none}
+.panel.show{display:block}
+
+textarea#inp{
+  width:100%;height:100%;background:var(--surface);border:none;color:var(--tx);
+  font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;
+  padding:20px;resize:none;outline:none
+}
+textarea#inp::placeholder{color:var(--tx4)}
+
+/* Preview */
+#prev-pane{padding:28px 36px;min-height:100%;background:var(--surface)}
+#prev-body{max-width:740px;margin:0 auto;line-height:1.8}
+#prev-body h1,#prev-body h2,#prev-body h3{color:var(--tx);margin:1.1em 0 .5em}
+#prev-body h1{font-size:20px;font-weight:700}
+#prev-body h2{font-size:16px;font-weight:600}
+#prev-body h3{font-size:14px;font-weight:600}
+#prev-body p{margin:.65em 0;color:var(--tx2)}
+#prev-body code{background:var(--surface2);padding:2px 6px;border-radius:5px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--ac)}
+#prev-body table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:13px}
+#prev-body th,#prev-body td{border:1px solid var(--bd);padding:8px 13px}
+#prev-body th{background:var(--surface2);color:var(--tx);font-weight:600;font-size:12px}
+#prev-body td{color:var(--tx2)}
+#prev-body blockquote{border-left:3px solid var(--ac);padding-left:14px;color:var(--tx3);margin:.8em 0}
+
+/* Markdown */
+#md-pane{padding:20px;background:var(--surface);min-height:100%}
+#md-body{
+  background:var(--surface2);border:1px solid var(--bd);border-radius:10px;
+  padding:16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;
+  line-height:1.7;white-space:pre-wrap;color:#1d6b3e;min-height:200px
+}
+
+/* Placeholder */
+.ph{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;color:var(--tx3);padding:60px 40px;text-align:center;height:100%
+}
+.ph-ico{
+  width:52px;height:52px;border-radius:16px;background:var(--surface2);
+  border:1px solid var(--bd);display:flex;align-items:center;justify-content:center
+}
+.ph p{font-size:13px;line-height:1.7;color:var(--tx3)}
+.ph p b{color:var(--tx2);font-weight:600}
+
+/* Bottom bar */
+.bot{
+  background:var(--surface);border-top:1px solid var(--bd);
+  padding:4px 16px;font-size:11.5px;color:var(--tx3);
+  display:flex;align-items:center;gap:7px;flex-shrink:0;min-height:26px;
+  font-family:'JetBrains Mono',monospace
+}
+.bot-dot{width:6px;height:6px;border-radius:50%;background:var(--tx4);flex-shrink:0}
+.bot.ok .bot-dot{background:var(--ok)}
+.bot.err .bot-dot{background:var(--er)}
+.bot.busy .bot-dot{background:var(--warn);animation:pl 1s infinite}
+@keyframes pl{0%,100%{opacity:1}50%{opacity:.3}}
+.bot-right{margin-left:auto;display:flex;gap:14px}
+.kbhint{color:var(--tx4)}
+.kbkey{
+  display:inline-block;background:var(--surface2);border:1px solid var(--bd);
+  border-radius:4px;padding:0 4px;font-size:10px;color:var(--tx3);font-family:'JetBrains Mono',monospace
+}
+
+/* Charbar */
+.charbar{
+  background:var(--surface);border-top:1px solid var(--bd);
+  padding:3px 16px;font-size:11px;color:var(--tx4);
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;font-family:'JetBrains Mono',monospace;min-height:22px
+}
+.sk-ind{color:var(--tx4);transition:color .2s}
+.sk-ind.on{color:var(--ac)}
+
+/* Modal */
+.app-wrap{position:relative;display:flex;flex-direction:column;flex:1;overflow:hidden}
+.overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.3);
+  display:flex;align-items:center;justify-content:center;z-index:50;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
+}
+.overlay.hidden{display:none}
+
+.modal{
+  background:var(--surface);border:1px solid var(--bd);border-radius:16px;
+  width:540px;max-width:92vw;max-height:88vh;display:flex;flex-direction:column;
+  box-shadow:var(--shadow-md)
+}
+.mh{
+  padding:16px 20px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0
+}
+.mh h2{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.mcls{
+  background:var(--surface2);border:none;color:var(--tx3);
+  font-size:16px;cursor:pointer;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1
+}
+.mcls:hover{background:var(--surface3);color:var(--tx)}
+
+.mb{padding:18px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;flex:1}
+.mb::-webkit-scrollbar{width:3px}
+.mb::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+.field{display:flex;flex-direction:column;gap:5px}
+.field>label{font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--tx3)}
+.field input,.field textarea{
+  background:var(--bg);border:1.5px solid var(--bd);color:var(--tx);
+  border-radius:9px;padding:9px 12px;font-size:13px;outline:none;
+  transition:border-color .15s,box-shadow .15s;font-family:inherit
+}
+.field input:focus,.field textarea:focus{
+  border-color:var(--ac);
+  box-shadow:0 0 0 3px rgba(0,122,255,.12)
+}
+.field textarea{resize:vertical;line-height:1.65;font-family:'JetBrains Mono',monospace;font-size:12px}
+.field .sub{font-size:11.5px;color:var(--tx3);line-height:1.5}
+#f-ins{min-height:110px}
+
+/* Guide */
+.guide{background:var(--surface2);border:1px solid var(--bd);border-radius:10px;overflow:hidden;flex-shrink:0}
+.guide-hd{
+  padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none;transition:background .15s
+}
+.guide-hd:hover{background:var(--surface3)}
+.guide-title{font-size:12.5px;font-weight:600;color:var(--tx2);display:flex;align-items:center;gap:8px}
+.guide-icon{
+  width:20px;height:20px;border-radius:6px;background:var(--ac-light);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0
+}
+.guide-arr{color:var(--tx3);font-size:11px;transition:transform .2s}
+.guide.open .guide-arr{transform:rotate(180deg)}
+.guide-body{display:none;padding:0 14px 14px;border-top:1px solid var(--bd)}
+.guide.open .guide-body{display:block}
+.guide-body p{font-size:12.5px;color:var(--tx3);line-height:1.65;margin-top:10px}
+.guide-body p b{color:var(--tx2)}
+.guide-body .ex-label{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.6px;margin:10px 0 4px}
+.ex{
+  background:var(--surface);border:1px solid var(--bd);border-radius:7px;
+  padding:9px 11px;font-family:'JetBrains Mono',monospace;font-size:11.5px;
+  color:#1d6b3e;line-height:1.6;white-space:pre-wrap
+}
+
+.mf{padding:14px 20px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.mbtn{
+  padding:8px 20px;border-radius:9px;border:none;cursor:pointer;
+  font-size:13px;font-weight:600;transition:all .15s;font-family:inherit
+}
+.mbtn-c{background:var(--surface2);color:var(--tx2);border:1px solid var(--bd)}
+.mbtn-c:hover{background:var(--surface3)}
+.mbtn-s{background:var(--ac);color:white;box-shadow:0 2px 8px rgba(0,122,255,.25)}
+.mbtn-s:hover{background:var(--ac-h)}
+.mbtn-s:disabled{opacity:.5;cursor:not-allowed}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">word-processor</span>
+  
+  <div class="hright">
+    <span class="api-pill"><span id="api-status-text">Подключено</span></span>
+  </div>
+</header>
+
+<div class="app-wrap">
+<div class="main">
+
+  <!-- Left panel -->
+  <div class="lp">
+
+    <div class="sh">
+      <span class="sl">Скиллы</span>
+      <button class="add-btn" onclick="openModal()" title="Создать скилл">＋</button>
+    </div>
+
+    <div class="sk-scroll" id="sk-list"></div>
+    <div id="sk-empty" class="sk-empty" style="display:none">
+      <div class="sk-empty-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+      </div>
+      <p>Скиллов пока нет.<br>Нажми <b style="color:var(--ac)">＋</b> чтобы создать первый.</p>
+      <p class="hint">Скилл задаёт правила<br>форматирования для конкретного<br>типа документа.</p>
+    </div>
+
+    <!-- Settings -->
+    <div class="settings">
+      <div class="sl" style="margin-bottom:9px">Документ</div>
+
+      <div class="sr">
+        <label>Шрифт документа</label>
+        <select id="doc-font">
+          <option value="Inter">Inter</option>
+          <option value="Calibri">Calibri</option>
+          <option value="Arial Nova">Arial Nova</option>
+          <option value="Arial">Arial</option>
+          <option value="Times New Roman" selected>Times New Roman</option>
+          <option value="Cambria">Cambria</option>
+          <option value="Georgia">Georgia</option>
+          <option value="PT Serif">PT Serif</option>
+          <option value="PT Sans">PT Sans</option>
+        </select>
+      </div>
+
+      <div class="sr">
+        <label>Формат файла</label>
+        <select id="fmt">
+          <option value="docx">Word (.docx)</option>
+          <option value="pdf">PDF</option>
+        </select>
+      </div>
+
+      <div class="sr">
+        <div class="sr-row">
+        <label>Оглавление</label>
+        <label class="tog">
+          <input type="checkbox" id="toc">
+          <div class="tog-t"><div class="tog-th"></div></div>
+        </label>
+        </div></div>
+
+      <div class="sr" id="toc-d-row">
+        <div class="sr-row">
+          <label>Глубина оглавления <span title="1 — только главы&#10;2 — главы + разделы&#10;3 — + подразделы" style="cursor:help;color:var(--tx4)">?</span></label>
+          <input type="number" id="toc-d" value="3" min="1" max="6">
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-s" id="btn-prev" onclick="doPreview()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.636-8 10-8 10 8 10 8-3.636 8-10 8-10-8-10-8z"/></svg>
+        Предпросмотр
+      </button>
+      <button class="btn btn-p" id="btn-proc" onclick="doProcess()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Скачать документ
+      </button>
+      <button class="btn btn-s" id="btn-copy" onclick="copyMd()" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Копировать Markdown
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Right panel -->
+  <div class="rp">
+    <div class="tabs">
+      <div class="tab active" id="t-inp" onclick="switchTab('inp')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Входной текст
+      </div>
+      <div class="tab" id="t-prev" onclick="switchTab('prev')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.636-8 10-8 10 8 10 8-3.636 8-10 8-10-8-10-8z"/></svg>
+        Предпросмотр
+        <div class="tab-ready"></div>
+      </div>
+      <div class="tab" id="t-md" onclick="switchTab('md')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Markdown
+        <div class="tab-ready"></div>
+      </div>
+    </div>
+
+    <div class="panels">
+      <div class="panel show" id="p-inp">
+        <textarea id="inp" placeholder="Вставь сюда сырой текст — из Word, PDF, любого источника.
+
+Формулы распознаются в любом виде:
+  v = Δs/Δt
+  E = mc²
+  КПД: η = W_пол / W_затр × 100%
+  сумма от i=1 до n x_i в квадрате
+
+Символы вроде &#x202F;% убираются автоматически.
+
+Выбери скилл слева → нажми Предпросмотр." oninput="updateCount()"></textarea>
+      </div>
+
+      <div class="panel" id="p-prev">
+        <div id="prev-pane">
+          <div class="ph" id="prev-ph">
+            <div class="ph-ico">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </div>
+            <p>Нажми <b>Предпросмотр</b> —<br>здесь появится текст с KaTeX‑формулами</p>
+          </div>
+          <div id="prev-body" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-md">
+        <div id="md-pane">
+          <div class="ph" id="md-ph">
+            <div class="ph-ico">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <p>Здесь появится Markdown<br>с LaTeX‑формулами для pandoc</p>
+          </div>
+          <pre id="md-body" style="display:none"></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="charbar">
+      <span id="char-c">0 символов</span>
+      <span class="sk-ind" id="sk-ind">скилл не выбран</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="bot" id="bot">
+  <div class="bot-dot"></div>
+  <span id="bot-t">Готов к работе</span>
+  <div class="bot-right">
+    <span class="kbhint"><kbd class="kbkey">Ctrl+Enter</kbd> скачать</span>
+    <span class="kbhint"><kbd class="kbkey">Ctrl+Shift+P</kbd> предпросмотр</span>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay hidden" id="overlay" onclick="closeOut(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <h2 id="m-title">Новый скилл</h2>
+      <button class="mcls" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mb">
+
+      <!-- Guide -->
+      <div class="guide" id="guide">
+        <div class="guide-hd" onclick="toggleGuide()">
+          <div class="guide-title">
+            <div class="guide-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#007aff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            Как писать инструкции для скилла
+          </div>
+          <span class="guide-arr">▾</span>
+        </div>
+        <div class="guide-body">
+          <p><b>Что такое скилл?</b> Набор правил, которые ИИ применит при форматировании. Пиши конкретно — чем точнее, тем лучше результат.</p>
+          <p><b>Что описывать:</b><br>
+          — Заголовки (прописные/строчные, центр/левый край, нумерация)<br>
+          — Нумерацию формул: сквозная (1),(2) или по главам (1.1),(1.2)<br>
+          — Подписи к рисункам (где, какой текст, курсив или нет)<br>
+          — Подписи к таблицам (выше/ниже, формат)<br>
+          — Список литературы (ГОСТ Р 7.0.5, IEEE, APA...)<br>
+          — Специфичные требования журнала / вуза</p>
+
+          <div class="ex-label">Пример — ГОСТ 7.32</div>
+          <div class="ex">- Заголовки разделов: прописными, по центру, жирный
+- Нумерация: 1, 1.1, 1.1.1
+- ВВЕДЕНИЕ и ЗАКЛЮЧЕНИЕ без номера, прописными
+- Формулы нумеруются: (1), (2), ...
+- Рисунок N — Название (ниже, по центру)
+- Таблица N — Название (выше, слева)
+- Литература по ГОСТ Р 7.0.5-2008</div>
+
+          <div class="ex-label">Пример — Тезисы конференции</div>
+          <div class="ex">- Заголовок по центру, жирный, без нумерации
+- Авторы и организация — курсивом, следующая строка
+- Без оглавления
+- Формулы нумеровать только если их больше двух
+- Максимум 3 страницы
+- Не более 10 источников в литературе</div>
+
+          <div class="ex-label">Пример — IEEE</div>
+          <div class="ex">- Sections: Roman numerals I., II., III.
+- Subsections: A., B., C. — italic inline heading
+- Equations right-aligned: (1), (2)
+- Figures: Fig. N. below, centered
+- Tables: TABLE N above, small caps
+- References: IEEE style [1], numbered list</div>
+
+          <p style="font-size:11.5px;color:var(--tx4);margin-top:10px">
+            Инструкции уходят напрямую в системный промпт. Шрифт и поля задаются в настройках — не нужно описывать их здесь.
+          </p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Название *</label>
+        <input id="f-nm" type="text" placeholder="Курсовая работа, Реферат, ВКР, Статья..." maxlength="50">
+      </div>
+      <div class="field">
+        <label>Описание</label>
+        <input id="f-ds" type="text" placeholder="Одна строка — тип документа" maxlength="100">
+        <div class="sub">Отображается под названием в списке скиллов</div>
+      </div>
+      <div class="field">
+        <label>Инструкции</label>
+        <textarea id="f-ins" rows="7" placeholder="Опиши правила форматирования — см. примеры выше ↑
+
+- Как оформлять заголовки
+- Нумерация формул
+- Подписи к рисункам и таблицам
+- Стиль литературы
+- Специфичные требования"></textarea>
+        <div class="sub">Пиши конкретно. Можно адаптировать примеры из инструкции выше.</div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="mbtn mbtn-c" onclick="closeModal()">Отмена</button>
+      <button class="mbtn mbtn-s" id="m-save" onclick="saveSkill()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+let skills=[], activeId=null, editId=null, currentMd='', guideOpen=false, cacheId=null;
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function setStatus(msg,st=''){document.getElementById('bot').className='bot '+st;document.getElementById('bot-t').textContent=msg}
+
+function updateCount(){
+  document.getElementById('char-c').textContent=document.getElementById('inp').value.length.toLocaleString('ru')+' символов'
+}
+document.getElementById('inp').addEventListener('input',updateCount);
+document.getElementById('toc').addEventListener('change',function(){
+  document.getElementById('toc-d-row').style.opacity=this.checked?'1':'.4'
+});
+
+function switchTab(n){
+  ['inp','prev','md'].forEach(t=>{
+    document.getElementById('p-'+t).classList.toggle('show',t===n);
+    document.getElementById('t-'+t).classList.toggle('active',t===n);
+  });
+}
+
+function renderSkills(){
+  const c=document.getElementById('sk-list'), em=document.getElementById('sk-empty');
+  c.innerHTML='';
+  if(!skills.length){em.style.display='block';updateInd();return}
+  em.style.display='none';
+  const ns=document.createElement('div');
+  ns.className='no-sk-row'+(activeId===null?' active':'');
+  ns.onclick=()=>selectSkill(null);
+  ns.innerHTML='<span style="font-size:13px;color:var(--tx4)">∅</span><span>Без скилла</span>';
+  c.appendChild(ns);
+  skills.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='sk'+(activeId===s.id?' active':'');
+    d.onclick=()=>selectSkill(s.id);
+    d.innerHTML=`<div class="sk-num">${i+1}</div><div class="sk-inf"><div class="sk-nm">${esc(s.name)}</div>${s.description?`<div class="sk-ds">${esc(s.description)}</div>`:''}</div><div class="sk-acts"><button class="sk-a" onclick="event.stopPropagation();openModal('${s.id}')" title="Редактировать">✎</button><button class="sk-a del" onclick="event.stopPropagation();deleteSkill('${s.id}')" title="Удалить">✕</button></div>`;
+    c.appendChild(d);
+  });
+  updateInd();
+}
+function updateInd(){
+  const sk=skills.find(s=>s.id===activeId), el=document.getElementById('sk-ind');
+  if(sk){el.textContent='скилл: '+sk.name;el.classList.add('on')}
+  else{el.textContent='скилл не выбран';el.classList.remove('on')}
+}
+function selectSkill(id){activeId=id;renderSkills();const sk=skills.find(s=>s.id===id);setStatus('Скилл: '+(sk?sk.name:'не выбран'),'ok')}
+function deleteSkill(id){if(!confirm('Удалить скилл «'+(skills.find(s=>s.id===id)?.name)+'»?'))return;if(activeId===id)activeId=null;skills=skills.filter(s=>s.id!==id);renderSkills();setStatus('Скилл удалён','ok')}
+
+function openModal(skillId=null){
+  editId=skillId;const sk=skillId?skills.find(s=>s.id===skillId):null;
+  document.getElementById('m-title').textContent=sk?'Редактировать скилл':'Новый скилл';
+  document.getElementById('f-nm').value=sk?.name||'';
+  document.getElementById('f-ds').value=sk?.description||'';
+  document.getElementById('f-ins').value=sk?.instructions||'';
+  document.getElementById('overlay').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('f-nm').focus(),60);
+}
+function closeModal(){document.getElementById('overlay').classList.add('hidden');editId=null}
+function closeOut(e){if(e.target===document.getElementById('overlay'))closeModal()}
+function toggleGuide(){guideOpen=!guideOpen;document.getElementById('guide').classList.toggle('open',guideOpen)}
+function saveSkill(){
+  const nm=document.getElementById('f-nm').value.trim();
+  if(!nm){document.getElementById('f-nm').focus();document.getElementById('f-nm').style.borderColor='var(--er)';return}
+  document.getElementById('f-nm').style.borderColor='';
+  const p={id:editId||Math.random().toString(36).slice(2,10),name:nm,description:document.getElementById('f-ds').value.trim(),instructions:document.getElementById('f-ins').value.trim()};
+  if(editId){skills=skills.map(s=>s.id===editId?p:s)}else{skills.push(p)}
+  renderSkills();closeModal();setStatus('Скилл «'+nm+'» сохранён','ok');
+}
+
+const DEMO_MD=`---\ntitle: "Исследование параметров ионосферы методами машинного обучения"\nauthor: "Н.А. Короткова"\n---\n\n# 1. Введение\n\nПрогнозирование ионосферных параметров $f_0F_2$ и $MUF(3000)F_2$ является актуальной задачей современной радиофизики.\n\n## 1.1 Постановка задачи\n\nЗадача сводится к минимизации функционала:\n\n$$\\mathcal{L}(f) = \\frac{1}{n}\\sum_{i=1}^{n}\\left(y_i - f(x_i)\\right)^2 \\hspace{1cm}(1.1)$$\n\nКоэффициент детерминации $R^2$:\n\n$$R^2 = 1 - \\frac{\\sum_i(y_i - \\hat{y}_i)^2}{\\sum_i(y_i - \\bar{y})^2} \\hspace{1cm}(1.2)$$\n\n## 1.2 Данные\n\nИспользовались данные станции NICOSIA (GIRO) за 2018–2022 гг.\n\n**Таблица 1.1 — Метрики качества по сезонам**\n\n| Сезон | RMSE | MAE | $R^2$ |\n|-------|------|-----|-------|\n| Зима | 0.42 | 0.31 | 0.87 |\n| Весна | 0.38 | 0.28 | 0.91 |\n| Лето | 0.51 | 0.39 | 0.83 |\n| Осень | 0.44 | 0.33 | 0.89 |`;
+
+function setBusy(b){document.getElementById('btn-prev').disabled=b;document.getElementById('btn-proc').disabled=b}
+async function doPreview(){
+  const txt=document.getElementById('inp').value.trim();
+  if(!txt){setStatus('Введи текст','err');return}
+  setStatus('Генерирую…','busy');setBusy(true);
+  currentMd='';cacheId=null;
+
+  // Показываем пустые панели сразу
+  document.getElementById('md-body').textContent='';
+  document.getElementById('md-body').style.display='block';
+  document.getElementById('md-ph').style.display='none';
+  document.getElementById('prev-body').innerHTML='';
+  document.getElementById('prev-body').style.display='block';
+  document.getElementById('prev-ph').style.display='none';
+  switchTab('md');
+
+  try{
+    const res = await fetch('/stream',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:txt, skill_id:activeId})
+    });
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while(true){
+      const {done, value} = await reader.read();
+      if(done) break;
+      buffer += decoder.decode(value, {stream:true});
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for(const line of lines){
+        if(!line.startsWith('data: ')) continue;
+        try{
+          const ev = JSON.parse(line.slice(6));
+          if(ev.error){ setStatus('Ошибка: '+ev.error,'err'); setBusy(false); return; }
+          if(ev.chunk){
+            currentMd += ev.chunk;
+            document.getElementById('md-body').textContent = currentMd;
+          }
+          if(ev.done){
+            cacheId = ev.cache_id||null;
+            renderPreview(currentMd);
+            document.getElementById('btn-copy').style.display='flex';
+            document.getElementById('t-prev').classList.add('has-content');
+            document.getElementById('t-md').classList.add('has-content');
+            switchTab('prev');
+            setStatus('Предпросмотр готов','ok');
+            setBusy(false);
+          }
+        }catch(e){}
+      }
+    }
+  }catch(e){setStatus('Ошибка: '+e.message,'err');setBusy(false)}
+}
+async function doProcess(){
+  const txt=document.getElementById('inp').value.trim();if(!txt){setStatus('Введи текст','err');return}
+  const fmt=document.getElementById('fmt').value;
+  const font=document.getElementById('doc-font').value;
+  setStatus(`Конвертирую в .${fmt}…`,'busy');setBusy(true);
+  try{
+    const res=await fetch('/process',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:cacheId?'':document.getElementById('inp').value,
+        skill_id:activeId,cache_id:cacheId,
+        format:fmt,toc:document.getElementById('toc').checked,
+        toc_depth:parseInt(document.getElementById('toc-d').value),font})});
+    if(!res.ok){const d=await res.json();if(d.markdown){currentMd=d.markdown;showMd(currentMd);switchTab('md')}setStatus('Ошибка: '+(d.error||'').slice(0,80),'err');return}
+    const blob=await res.blob();const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`formatted.${fmt}`;a.click();
+    URL.revokeObjectURL(url);setStatus(`✓ formatted.${fmt} скачан`,'ok');
+  }catch(e){setStatus('Ошибка: '+e.message,'err')}
+  finally{setBusy(false)}
+}
+function showMd(md){
+  document.getElementById('md-body').textContent=md;
+  document.getElementById('md-body').style.display='block';
+  document.getElementById('md-ph').style.display='none';
+}
+function renderPreview(md){
+  const el=document.getElementById('prev-body');
+  el.innerHTML=marked.parse(md.replace(/^---[\s\S]*?---\n/,''));
+  el.style.display='block';document.getElementById('prev-ph').style.display='none';
+  if(typeof renderMathInElement!=='undefined')renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});
+}
+function copyMd(){navigator.clipboard.writeText(currentMd).then(()=>setStatus('Markdown скопирован','ok'))}
+
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();doProcess()}
+  if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='P'){e.preventDefault();doPreview()}
+  if(e.key==='Escape')closeModal();
+});
+renderSkills();updateCount();
+// Check API connection
+fetch('/status').then(r=>r.json()).then(d=>{
+  const el=document.getElementById('api-status-text');
+  const pill=el?.closest('.api-pill');
+  if(d.ok){
+    if(el) el.textContent='Подключено';
+    if(pill) pill.style.cssText='display:flex;align-items:center;gap:5px;font-size:12px;color:#1a7f3c;background:#f0faf3;border-radius:20px;padding:3px 10px;font-weight:500';
+  } else {
+    if(el){el.textContent='Нет ключа';}
+    if(pill) pill.style.cssText='display:flex;align-items:center;gap:5px;font-size:12px;color:var(--er);background:#fff5f5;border-radius:20px;padding:3px 10px;font-weight:500';
+  }
+}).catch(()=>{
+  const el=document.getElementById('api-status-text');
+  const pill=el?.closest('.api-pill');
+  if(el) el.textContent='Нет связи';
+  if(pill) pill.style.cssText='display:flex;align-items:center;gap:5px;font-size:12px;color:var(--er);background:#fff5f5;border-radius:20px;padding:3px 10px;font-weight:500';
+});
+</script>
+</body>
+</html>

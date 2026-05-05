@@ -1,0 +1,10 @@
+services:
+  word-processor:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./skills.json:/app/skills.json
+    restart: unless-stopped
